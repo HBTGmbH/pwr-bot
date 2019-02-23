@@ -1,0 +1,30 @@
+# First is basic bot configuration. Properties needed to connect the bot
+bot:
+  # The username with which the bot connects
+  user: bot
+  # The password used for connection
+  password: secret
+  # The bot self-identifies with this name
+  name: pwr-bot
+  # Rooms to join when the bot connects
+  default-rooms:
+    - pwr-bot-test
+    - some-other-room
+    - secret-room
+  # The host-URL of the rocket chat server
+  host: rocket.chat
+commands:
+  # This is the location for all custom commands. Custom commands dont have access to the bot itself
+  custom-location: /commands
+  # All commands crucial to the bots operation. System commands get the manager injected, granting them access to the manager
+  system-location: /system-commands
+# From here, it's command specific configuration
+# If your command needs some for of configuration, simply leave it here
+# As soon as your command gets picket up by the manager, the manager will ask for the commands name. In case of the help command, its help
+# The manager will then provide everything that belongs to command-config.help as JS object to the commad.
+command-config:
+  help:
+    keywords:
+      - help
+      - hilfe
+      - l'aide
