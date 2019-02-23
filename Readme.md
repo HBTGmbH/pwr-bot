@@ -49,6 +49,8 @@ A few system commands that are still missing:
 * unload-command
 * load-command
 * restart
+* join-room
+* leave-room
 
 Features that are planned:
 * Centralized permission system
