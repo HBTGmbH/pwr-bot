@@ -1,41 +1,52 @@
 const loadCommands = require("./command-loader").loadCommands;
+const ProcessedMessageCache = require("./util/processed-message-cache");
 const greetings = ["Achtung, Achtung! Eine Wichtige Mitteilung! {0} ist da!"];
 const MAX_MSG_AGE_MS = 60 * 1000;
+
+
+/**
+ * A message is a direct message when the roomId starts with the userId
+ */
+function isDirectMessage(msg) {
+    return msg.rid.startsWith(msg.u._id);
+}
+
+function isCommand(msg) {
+    return msg.trim().startsWith("!")
+}
+
 module.exports = class Manager {
 
-    constructor(driver, configuration) {
-       this.commands = [];
-       this.driver = driver;
-       this.id = null;
+    constructor(driver, configuration, api /*rocketchat api*/) {
+        this.systemCommands = [];
+        this.customCommands = [];
+        this.driver = driver;
+        this.id = null;
+        this.api = api;
 
-       this.rooms = configuration.bot["default-rooms"];
-       this.botName = configuration.bot["name"];
-       this.user = configuration.bot["user"];
-       this.password = configuration.bot["password"];
-       this.host = configuration.bot["host"];
+        // These are the rooms the bot listens to. Only if the message is received in one of those rooms
+        // (or if the bot is DM'ed), it will respond to the message.
+        this.rooms = configuration.bot["default-rooms"];
+        this.botName = configuration.bot["name"];
+        this.user = configuration.bot["user"];
+        this.password = configuration.bot["password"];
+        this.host = configuration.bot["host"];
 
-       this.configuration = configuration;
+        this.configuration = configuration;
+
+        this.processingCache = new ProcessedMessageCache();
     }
 
     async login() {
-        const conn = await this.driver.connect( { host: this.host, useSsl: true})
-        console.log("Connected!");
+        const conn = await this.driver.connect({host: this.host, useSsl: true})
+        console.log("Connected! Now logging in to API and Driver.");
         this.id = await this.driver.login({username: this.user, password: this.password});
-        console.log("Logged in " + this.id);
+        await this.api.login();
+        console.log("Logged in. Login ID is {0}", this.id);
         await this.driver.subscribeToMessages();
         console.log("Subscribed to messages");
         await this.driver.reactToMessages(this.getHandler());
     }
-
-    register(command) {
-        if (command) {
-            if (command.getName && command.applyConfig && command.getName()) {
-                const commandConfig = this.configuration["command-config"][command.getName()];
-                command.applyConfig(commandConfig);
-            }
-            this.commands.push(command);
-        }
-    };
 
     handleErrorInCommand(error, originalMessage, room) {
         console.error(error);
@@ -51,9 +62,9 @@ module.exports = class Manager {
     handleOne(listener, commandArguments, room, originalMessage, messageOptions) {
         // Listener respondTo arguments:
         // commandArguments, roomname, originalMessage, messageOptions
-        listener.respondTo(commandArguments, room, originalMessage,  messageOptions)
-            .then(this.sendResponseToRoom(room))
-            .catch(error => this.handleErrorInCommand(error, originalMessage.msg, room))
+        listener.respondTo(commandArguments, room, originalMessage, messageOptions)
+            .then(this.sendResponseToRoom(originalMessage.rid))
+            .catch(error => this.handleErrorInCommand(error, originalMessage.msg, originalMessage.rid))
     }
 
     static messageOf(msg) {
@@ -65,19 +76,23 @@ module.exports = class Manager {
     }
 
     getHandler() {
-        return async (error, msg, messageOptions) => {
-            const roomId = msg.rid;
-            let message = Manager.messageOf(msg);
-            if (!Manager.isTooOld(msg) && !this.isSelf(msg) && Manager.isCommand(message)) {
-                const command = /!(\S*)\s*.*/.exec(message)[1];
-                if (command) {
-                    const commandArguments = message.substr(command.length + 2, message.length - 1);
-                    const roomName =  await  this.driver.getRoomName(roomId);
-                    this.commands
-                        .filter(listener => listener.listensTo(command))
-                        .forEach(listener => this.handleOne(listener, commandArguments, roomName, msg, messageOptions));
+        return (error, msg, messageOptions) => {
+            this.driver.getRoomName(msg.rid).then(roomName => {
+                const message = Manager.messageOf(msg);
+                if (!this.isSelf(msg)
+                    && isCommand(message)
+                    && (this.rooms.contains(roomName) || isDirectMessage(msg)))
+                {
+                    const command = /!(\S*)\s*.*/.exec(message)[1];
+                    if (command && !this.processingCache.contains(msg._id)) {
+                        this.processingCache.add(msg._id);
+                        const commandArguments = message.substr(command.length + 2, message.length - 1);
+                        this.allCommands()
+                            .filter(listener => listener.listensTo(command))
+                            .forEach(listener => this.handleOne(listener, commandArguments, roomName, msg, messageOptions));
+                    }
                 }
-            }
+            });
         }
     }
 
@@ -103,25 +118,39 @@ module.exports = class Manager {
     }
 
     getCommands() {
-        return this.commands;
+        return [...this.allCommands()];
     }
 
     reloadCustomCommands() {
+        this.customCommands = [];
         loadCommands(this.configuration.commands["custom-location"], this.driver, null /* These commands dont get the manager*/)
-            .forEach(command => this.register(command));
+            .forEach(command => this.registerCustomCommand(command));
     }
 
     reloadSystemCommands() {
-        loadCommands(this.configuration.commands["system-location"], this.driver, this).forEach(command => this.register(command));
+        this.systemCommands = [];
+        loadCommands(this.configuration.commands["system-location"], this.driver, this).forEach(command => this.registerSystemCommand(command));
     }
 
-    static isCommand(msg) {
-        return msg.trim().startsWith("!")
+    registerCustomCommand(command) {
+        this.registerCommand(command, this.customCommands);
     }
 
-    static isTooOld(msg) {
-        const msgTimestamp = msg.ts.$date;
-        const now = new Date().getTime();
-        return now - msgTimestamp >= MAX_MSG_AGE_MS;
+    registerSystemCommand(command) {
+        this.registerCommand(command, this.systemCommands)
+    };
+
+    registerCommand(command, collection) {
+        if (command) {
+            if (command.getName && command.applyConfig && command.getName()) {
+                const commandConfig = this.configuration["command-config"][command.getName()];
+                command.applyConfig(commandConfig);
+            }
+            collection.push(command);
+        }
+    }
+
+    allCommands() {
+        return [...this.systemCommands, ...this.customCommands];
     }
 };

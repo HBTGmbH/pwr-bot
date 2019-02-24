@@ -31,7 +31,7 @@ describe("List commands", () => {
         const config = defaultConfig();
         manager = new Manager({}, config);
         command = new ListCommands(null, manager);
-        manager.register(command);
+        manager.registerCustomCommand(command);
     });
 
     test('should be instantiable', () => {
