@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/know-it-all.iml" filepath="$PROJECT_DIR$/.idea/know-it-all.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pwr-bot.iml" filepath="$PROJECT_DIR$/.idea/pwr-bot.iml" />
     </modules>
   </component>
 </project>
