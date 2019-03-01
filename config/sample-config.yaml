@@ -18,6 +18,10 @@ commands:
   custom-location: /commands
   # All commands crucial to the bots operation. System commands get the manager injected, granting them access to the manager
   system-location: /system-commands
+  # Commands that are supposed to be ignored by the bot. Name is mandatory for this to work
+  ignored:
+    - who-knows
+    - sample
 # From here, it's command specific configuration
 # If your command needs some for of configuration, simply leave it here
 # As soon as your command gets picket up by the manager, the manager will ask for the commands name. In case of the help command, its help

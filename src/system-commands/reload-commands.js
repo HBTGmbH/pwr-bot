@@ -20,9 +20,9 @@ module.exports = class ReloadCommands {
             if (isCustom) {
                 this.manager.reloadCustomCommands();
             }
-            return Promise.resolve("Specified commands reloaded! Type !list-commands for a list of all loaded commands!");
+            return "Specified commands reloaded! Type !list-commands for a list of all loaded commands!";
         }
-        return Promise.reject("I'm sorry, @" + originalMessage.u.username + ". You are not authorized to perform this action.");
+        return "I'm sorry, @" + originalMessage.u.username + ". You are not authorized to perform this action.";
     }
 
     listensTo(command) {

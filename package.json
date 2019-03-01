@@ -5,7 +5,7 @@
   "main": "bot.js",
   "scripts": {
     "test": "jest",
-    "bot": "node bot.js"
+    "bot": "node src/bot.js"
   },
   "author": "",
   "license": "ISC",

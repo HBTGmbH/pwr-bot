@@ -4,7 +4,7 @@ module.exports = class Help {
         this.manager = manager;
     }
 
-    async handleHelp() {
+    handleHelp() {
         const helps = this.manager.getCommands()
             .map(listener => listener.helpMessage())
             .filter(msg => !!msg)
@@ -17,7 +17,7 @@ module.exports = class Help {
     }
 
     respondTo(commandArguments, roomname, originalMessage, messageOptions) {
-        return new Promise(this.helpPromise());
+        return this.handleHelp();
     }
 
     listensTo(command) {

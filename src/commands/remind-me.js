@@ -62,7 +62,7 @@ module.exports = class RemindMe {
         }
         return this.driver
             .getDirectMessageRoomId(userName)
-            .then(roomId => new Due(this.dueDateFor(qty, unit), roomId, msg));
+            .then(roomId => new Due(this.dueDateFor(qty, unit), roomId, userName, msg));
     }
 
     commandPromise(command, userName) {

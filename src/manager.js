@@ -15,6 +15,13 @@ function isCommand(msg) {
     return msg.trim().startsWith("!")
 }
 
+function nameOf(command) {
+    if (command.getName) {
+        return command.getName();
+    }
+    return "";
+}
+
 module.exports = class Manager {
 
     constructor(driver, configuration, api /*rocketchat api*/) {
@@ -31,6 +38,12 @@ module.exports = class Manager {
         this.user = configuration.bot["user"];
         this.password = configuration.bot["password"];
         this.host = configuration.bot["host"];
+
+        if (configuration.commands && configuration.commands.ignored) {
+            this.ignored = configuration.commands.ignored;
+        } else {
+            this.ignored = [];
+        }
 
         this.configuration = configuration;
 
@@ -62,9 +75,19 @@ module.exports = class Manager {
     handleOne(listener, commandArguments, room, originalMessage, messageOptions) {
         // Listener respondTo arguments:
         // commandArguments, roomname, originalMessage, messageOptions
-        listener.respondTo(commandArguments, room, originalMessage, messageOptions)
-            .then(this.sendResponseToRoom(originalMessage.rid))
-            .catch(error => this.handleErrorInCommand(error, originalMessage.msg, originalMessage.rid))
+        const response = listener.respondTo(commandArguments, room, originalMessage, messageOptions);
+        if (response && response.then) {
+            // We have a promise, use async
+            response.then(this.sendResponseToRoom(originalMessage.rid))
+                .catch(error => this.handleErrorInCommand(error, originalMessage.msg, originalMessage.rid))
+        } else if (response && typeof response === "string") {
+            // Not a promise, just a plain old string. Send to room
+            this.driver.sendToRoom(response, originalMessage.rid);
+        } else if (response) {
+            // Command screwed up. Log it out.
+            console.warn("Received unknown response {0} from command {1}", response, listener.getName());
+        }
+
     }
 
     static messageOf(msg) {
@@ -141,7 +164,7 @@ module.exports = class Manager {
     };
 
     registerCommand(command, collection) {
-        if (command) {
+        if (command && !this.ignored.contains(nameOf(command))) {
             if (command.getName && command.applyConfig && command.getName()) {
                 const commandConfig = this.configuration["command-config"][command.getName()];
                 command.applyConfig(commandConfig);

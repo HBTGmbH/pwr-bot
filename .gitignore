@@ -169,8 +169,3 @@ typings/
 config.yaml
 !config/sample-config.yaml
 
-# We are ignoring the /commands directory, aside from some default commands.
-src/commands/*
-!src/commands/remind-me.js
-!src/commands/readme.md
-

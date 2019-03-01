@@ -20,10 +20,6 @@ module.exports = class ListCommands {
         return "The following commands are registered: {0}".format(commandList);
     }
 
-    listArgPromise() {
-        return (resolve, reject) => resolve(this.listArguments());
-    }
-
     respondTo(commandArguments, roomname, originalMessage, messageOptions) {
         // Original message structure:
         // originalMessage.u = user
@@ -32,9 +28,9 @@ module.exports = class ListCommands {
         // originalMessage.u.name = display name of user
         const requestingUser = originalMessage.u.username;
         if (this.authorizedUsers.contains(requestingUser)) {
-            return new Promise(this.listArgPromise());
+            return this.listArguments();
         } else {
-            return new Promise(resolve => resolve(""));
+            return "";
         }
     }
 
