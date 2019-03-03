@@ -13,6 +13,13 @@ bot:
     - secret-room
   # The host-URL of the rocket chat server
   host: rocket.chat
+# Logging configuration. Values listed here are defaults.
+log:
+  error: true
+  warn: true
+  info: true
+  log: true
+  debug: false
 commands:
   # This is the location for all custom commands. Custom commands dont have access to the bot itself
   custom-location: /commands

@@ -1,5 +1,6 @@
 const loadCommands = require("./command-loader").loadCommands;
 const ProcessedMessageCache = require("./util/processed-message-cache");
+const PwrLogger = require("./util/pwr-logger").PwrLogger;
 const greetings = ["Achtung, Achtung! Eine Wichtige Mitteilung! {0} ist da!"];
 const MAX_MSG_AGE_MS = 60 * 1000;
 
@@ -21,6 +22,8 @@ function nameOf(command) {
     }
     return "";
 }
+
+const log = new PwrLogger("Manager");
 
 module.exports = class Manager {
 
@@ -52,17 +55,17 @@ module.exports = class Manager {
 
     async login() {
         const conn = await this.driver.connect({host: this.host, useSsl: true})
-        console.log("Connected! Now logging in to API and Driver.");
+        log.info("Connected! Now logging in to RocketChat server @ {0}", this.host);
         this.id = await this.driver.login({username: this.user, password: this.password});
         await this.api.login();
-        console.log("Logged in. Login ID is {0}", this.id);
+        log.info("Logged in! Login ID is {0}", this.id);
         await this.driver.subscribeToMessages();
-        console.log("Subscribed to messages");
+        log.info("Subscribing to messages");
         await this.driver.reactToMessages(this.getHandler());
     }
 
     handleErrorInCommand(error, originalMessage, room) {
-        console.error(error);
+        log.error(error);
         this.driver.sendToRoom(error, room);
     }
 
@@ -85,7 +88,7 @@ module.exports = class Manager {
             this.driver.sendToRoom(response, originalMessage.rid);
         } else if (response) {
             // Command screwed up. Log it out.
-            console.warn("Received unknown response {0} from command {1}", response, listener.getName());
+            log.warn("Received unknown response {0} from command {1}", response, listener.getName());
         }
 
     }
@@ -124,7 +127,7 @@ module.exports = class Manager {
         this.driver
             .joinRoom(room)
             .then(v => this.greetRoom(room))
-            .catch(error => console.error("Could not join room " + room, error))
+            .catch(error => log.error("Could not join room " + room, error))
     }
 
     joinDefaultRooms() {
@@ -133,7 +136,7 @@ module.exports = class Manager {
 
     greetRoom(room) {
         const greeting = greetings.random();
-        this.driver.sendToRoom(greeting.format(this.name), room);
+        //this.driver.sendToRoom(greeting.format(this.name), room);
     }
 
     isSelf(msg) {
