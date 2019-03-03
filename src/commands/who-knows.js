@@ -9,7 +9,7 @@ module.exports = class WhoKnows {
     }
 
     async onInit() {
-        this.axios = pwrRequire("axios").then(r => axios = r);
+        this.axios = await pwrRequire("axios");
     }
 
     requestUsages(skill) {
@@ -23,9 +23,8 @@ module.exports = class WhoKnows {
                 }
             }
         }
-        return axios.post(this.url, payload, auth)
+        return this.axios.post(this.url, payload, auth)
             .then(response => response.data)
-            .catch(console.error)
     }
 
     fancyResponseFor(searchTerm) {

@@ -1,8 +1,13 @@
 const fs = require('fs');
+const PwrLogger = require("./util/pwr-logger").PwrLogger;
+
+const log = new PwrLogger("CommandLoader");
 
 function toCommand(basePath, driver, manager) {
     return (file) => {
-        console.log(require(basePath + "/" + file));
+        const path = basePath + "/" + file;
+        log.info(`Loading command ${path}`.format(path));
+        delete require.cache[require.resolve(path)];
         return new(require(basePath + "/" + file))(driver, manager);
     }
 }
