@@ -19,27 +19,47 @@ module.exports.PwrLogger = class {
 
     info(message, ...args) {
         if (LOGGING_CONFIGURATION.info) {
-            console.info(this.formatMessage(message, "INFO"), args);
+            if (args.length >= 1) {
+                console.info(this.formatMessage(message, "INFO"), args);
+            } else {
+                console.info(this.formatMessage(message, "INFO"));
+            }
         }
     }
     warn(message, ...args) {
         if (LOGGING_CONFIGURATION.warn) {
-            console.warn(this.formatMessage(message, "WARN"), args);
+            if (args.length >= 1) {
+                console.warn(this.formatMessage(message, "WARN"), args);
+            } else {
+                console.warn(this.formatMessage(message, "WARN"));
+            }
         }
     }
     log(message, ...args) {
         if (LOGGING_CONFIGURATION.log) {
-            console.log(this.formatMessage(message, "LOG"), args);
+            if (args.length >= 1) {
+                console.log(this.formatMessage(message, "LOG"), args);
+            } else {
+                console.log(this.formatMessage(message, "LOG"));
+            }
         }
     }
     error(message, ...args) {
         if (LOGGING_CONFIGURATION.error) {
-            console.error(this.formatMessage(message, "ERROR"), args);
+            if (args.length >= 1) {
+                console.error(this.formatMessage(message, "ERROR"), args);
+            } else {
+                console.error(this.formatMessage(message, "ERROR"));
+            }
         }
     }
     debug(message, ...args) {
         if (LOGGING_CONFIGURATION.debug) {
-            console.error(this.formatMessage(message, "DEBUG"), args);
+            if (args.length >= 1) {
+                console.debug(this.formatMessage(message, "DEBUG"), args);
+            } else {
+                console.debug(this.formatMessage(message, "DEBUG"));
+            }
         }
     }
 

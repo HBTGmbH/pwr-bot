@@ -14,6 +14,12 @@ const {PwrLogger} = require("./util/pwr-logger");
 const botLog = new PwrLogger("BotInitializer");
 const rocketChatLog = new PwrLogger("RocketChatSDK");
 
+const pwrRequire = require("./util/pwr-require");
+if (config["install-script"]) {
+    pwrRequire.setInstallScript(config["install-script"])
+}
+global.pwrRequire = pwrRequire.pwrRequire;
+
 async function connectManager() {
     botLog.info("Bootstrapping bot.");
     const manager = new Manager(driver, config, api);

@@ -53,26 +53,26 @@ describe("List commands", () => {
     });
 
     test('Should answere with a list of commands by getName()', () => {
-        return expect(command.respondTo("", "foo-room", defaultOriginalMessage(), {})).resolves.toBe("The following commands are registered: list-commands");
+        return expect(command.respondTo("", "foo-room", defaultOriginalMessage(), {})).toBe("The following commands are registered: list-commands");
     });
 
     test('With command not defining getName(), should resolve by class name', () => {
         command.getName = undefined;
-        return expect(command.respondTo("", "foo-room", defaultOriginalMessage(), {})).resolves.toBe("The following commands are registered: ListCommands");
+        return expect(command.respondTo("", "foo-room", defaultOriginalMessage(), {})).toBe("The following commands are registered: ListCommands");
     });
 
     test('Should not respond to unauthorized User', () => {
         command.applyConfig({"authorized-users": ["jane.doe"]});
         const originalMessage = defaultOriginalMessage();
         originalMessage.u.username = "john.doe";
-        return expect(command.respondTo("", "foo-room", originalMessage, {})).resolves.toBeFalsy();
+        return expect(command.respondTo("", "foo-room", originalMessage, {})).toBeFalsy();
     });
 
     test('Should respond to authorized user', () => {
         command.applyConfig({"authorized-users": ["john.doe"]});
         const originalMessage = defaultOriginalMessage();
         originalMessage.u.username = "john.doe";
-        return expect(command.respondTo("", "foo-room", originalMessage, {})).resolves.toBeTruthy();
+        return expect(command.respondTo("", "foo-room", originalMessage, {})).toBeTruthy();
     })
 });
 

@@ -27,3 +27,16 @@ if (!Array.prototype.contains ) {
 } else {
     throw new Error("Array.prototype.random  is now defined! Please check the usages of string.format!");
 }
+
+if (!global.sleep) {
+    global.sleep = function sleep(milliseconds) {
+        let start = new Date().getTime();
+        for (let i = 0; i < 1e7; i++) {
+            if ((new Date().getTime() - start) > milliseconds){
+                break;
+            }
+        }
+    }
+}  else {
+    throw new Error("global.sleep is now defined! Please check the usages of global.sleep!");
+}

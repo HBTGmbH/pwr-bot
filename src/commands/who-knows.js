@@ -1,13 +1,15 @@
-const axios = require("axios");
-
 /**
  * Bot that queries against HBTs internal API to find out who knows what!
  */
-module.exports =  class WhoKnows {
+module.exports = class WhoKnows {
 
     constructor() {
-        console.log("Who-Knows connected.");
+        this.axios = null;
         this.commands = ["who-knows", "wer-weiß", "häää?", "hää?", "wat?"]
+    }
+
+    async onInit() {
+        this.axios = pwrRequire("axios").then(r => axios = r);
     }
 
     requestUsages(skill) {

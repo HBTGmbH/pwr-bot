@@ -8,6 +8,14 @@ module.exports =  class SampleCommand {
     }
 
     /**
+     * You can use this method to initialize dependencies and necessary libraries.
+     * This is a trade-off made to allow usage of the pwrRequire() function.
+     */
+    async onInit() {
+        this.axios = await pwrRequire("axios");
+    }
+
+    /**
      * The manager will call this method if it thinks you should react to it.
      *
      * You can return either a string or a Promise. If you return a promise, make

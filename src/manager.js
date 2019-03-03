@@ -17,10 +17,13 @@ function isCommand(msg) {
 }
 
 function nameOf(command) {
-    if (command.getName) {
+    if (command && command.getName) {
         return command.getName();
     }
-    return "";
+    if (command && command.constructor) {
+        return  command.constructor.name;
+    }
+    return undefined;
 }
 
 const log = new PwrLogger("Manager");
@@ -136,7 +139,7 @@ module.exports = class Manager {
 
     greetRoom(room) {
         const greeting = greetings.random();
-        //this.driver.sendToRoom(greeting.format(this.name), room);
+        this.driver.sendToRoom(greeting.format(this.name), room);
     }
 
     isSelf(msg) {
@@ -167,12 +170,18 @@ module.exports = class Manager {
     };
 
     registerCommand(command, collection) {
-        if (command && !this.ignored.contains(nameOf(command))) {
-            if (command.getName && command.applyConfig && command.getName()) {
-                const commandConfig = this.configuration["command-config"][command.getName()];
+        const commandName = nameOf(command);
+        if (command && !this.ignored.contains(commandName)) {
+            log.debug(`Registering "${commandName}"`);
+            if (commandName && command.applyConfig) {
+                const commandConfig = this.configuration["command-config"][commandName];
                 command.applyConfig(commandConfig);
             }
             collection.push(command);
+            if (command.onInit) {
+                command.onInit();
+            }
+
         }
     }
 
