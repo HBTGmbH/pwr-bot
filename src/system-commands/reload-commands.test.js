@@ -10,8 +10,18 @@ describe("Reload commands", () => {
     let reloadCustom;
     let reloadSystem;
 
+    const defaultConfig = () => {
+        return {
+            bot: {
+                "user": "foo",
+                "password": "foo",
+                "host": "foo"
+            }
+        };
+    };
+
     beforeEach(() => {
-        manager = new Manager(null, {bot: {}});
+        manager = new Manager(null, defaultConfig());
         command = new ReloadCommands(null, manager);
         originalMessage = {u: {username: "jane.doe"}};
         command.applyConfig({"authorized-users": ["jane.doe"]});

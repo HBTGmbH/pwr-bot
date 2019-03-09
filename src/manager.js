@@ -26,6 +26,12 @@ function nameOf(command) {
     return undefined;
 }
 
+function requireConfiguration(configuredValue, propertyName) {
+    if (!configuredValue) {
+        throw new Error(`Mandatory configuration paremeter '${propertyName}' is missing!`)
+    }
+}
+
 const log = new PwrLogger("Manager");
 
 module.exports = class Manager {
@@ -36,7 +42,11 @@ module.exports = class Manager {
         this.driver = driver;
         this.id = null;
         this.api = api;
+        this.processingCache = new ProcessedMessageCache();
+        this.applyConfiguration(configuration);
+    }
 
+    applyConfiguration(configuration) {
         // These are the rooms the bot listens to. Only if the message is received in one of those rooms
         // (or if the bot is DM'ed), it will respond to the message.
         this.rooms = configuration.bot["default-rooms"];
@@ -52,8 +62,10 @@ module.exports = class Manager {
         }
 
         this.configuration = configuration;
-
-        this.processingCache = new ProcessedMessageCache();
+        requireConfiguration(this.host, "bot.host");
+        requireConfiguration(this.password, "bot.password");
+        requireConfiguration(this.user, "bot.user");
+        return this;
     }
 
     async login() {

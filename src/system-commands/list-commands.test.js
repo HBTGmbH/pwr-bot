@@ -10,7 +10,11 @@ describe("List commands", () => {
 
     const defaultConfig = () => {
         return {
-            bot: {},
+            bot: {
+                "user": "foo",
+                "password": "foo",
+                "host": "foo"
+            },
             "command-config": {
                 "list-commands": {
                     "keywords": "test",
