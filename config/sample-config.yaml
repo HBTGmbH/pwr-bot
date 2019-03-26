@@ -35,6 +35,9 @@ commands:
 # As soon as your command gets picket up by the manager, the manager will ask for the commands name. In case of the help command, its help
 # The manager will then provide everything that belongs to command-config.help as JS object to the commad.
 command-config:
+  self-update:
+    authorized-users:
+      -john.doe
   help:
     keywords:
       - help
